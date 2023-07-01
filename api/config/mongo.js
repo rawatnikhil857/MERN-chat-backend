@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-
+mongoose.set('strictQuery', false);
 dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI;
