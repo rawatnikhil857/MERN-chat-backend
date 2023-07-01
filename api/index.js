@@ -27,49 +27,48 @@ app.use("/api/message", chatMessageRoutes);
 app.use("/api/user", userRoutes);
 
 if(PORT){const server = app.listen(PORT, () => {
-console.log(`Server listening on port ${PORT}`);
-});
-}
-
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3001",
-    credentials: true,
-  },
-});
-
-io.use(VerifySocketToken);
-
-global.onlineUsers = new Map();
-
-const getKey = (map, val) => {
-  for (let [key, value] of map.entries()) {
-    if (value === val) return key;
-  }
-};
-
-io.on("connection", (socket) => {
-  global.chatSocket = socket;
-
-  socket.on("addUser", (userId) => {
-    onlineUsers.set(userId, socket.id);
-    socket.emit("getUsers", Array.from(onlineUsers));
+  console.log(`Server listening on port ${PORT}`);
+  });
+  const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:3001",
+      credentials: true,
+    },
   });
 
-  socket.on("sendMessage", ({ senderId, receiverId, message }) => {
-    const sendUserSocket = onlineUsers.get(receiverId);
-    if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("getMessage", {
-        senderId,
-        message,
-      });
+  io.use(VerifySocketToken);
+
+  global.onlineUsers = new Map();
+
+  const getKey = (map, val) => {
+    for (let [key, value] of map.entries()) {
+      if (value === val) return key;
     }
-  });
+  };
 
-  socket.on("disconnect", () => {
-    onlineUsers.delete(getKey(onlineUsers, socket.id));
-    socket.emit("getUsers", Array.from(onlineUsers));
+  io.on("connection", (socket) => {
+    global.chatSocket = socket;
+
+    socket.on("addUser", (userId) => {
+      onlineUsers.set(userId, socket.id);
+      socket.emit("getUsers", Array.from(onlineUsers));
+    });
+
+    socket.on("sendMessage", ({ senderId, receiverId, message }) => {
+      const sendUserSocket = onlineUsers.get(receiverId);
+      if (sendUserSocket) {
+        socket.to(sendUserSocket).emit("getMessage", {
+          senderId,
+          message,
+        });
+      }
+    });
+
+    socket.on("disconnect", () => {
+      onlineUsers.delete(getKey(onlineUsers, socket.id));
+      socket.emit("getUsers", Array.from(onlineUsers));
+    });
   });
-});
+}
 
 module.exports = app;
