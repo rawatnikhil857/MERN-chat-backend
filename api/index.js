@@ -71,3 +71,5 @@ io.on("connection", (socket) => {
     socket.emit("getUsers", Array.from(onlineUsers));
   });
 });
+
+module.exports = app;
