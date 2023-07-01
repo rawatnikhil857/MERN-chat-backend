@@ -20,15 +20,16 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(VerifyToken);
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT;
 
 app.use("/api/room", chatRoomRoutes);
 app.use("/api/message", chatMessageRoutes);
 app.use("/api/user", userRoutes);
 
-const server = app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+if(PORT){const server = app.listen(PORT, () => {
+console.log(`Server listening on port ${PORT}`);
 });
+}
 
 const io = new Server(server, {
   cors: {
